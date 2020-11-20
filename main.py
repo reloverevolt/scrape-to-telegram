@@ -8,6 +8,8 @@ TOKEN = os.environ.get("BOT_TOKEN")
 CHANNEL = os.environ.get("CHANNEL_ID")
 PORT = int(os.environ.get("PORT", 5000))
 
+
+# Function processing based on user reaction "like" or "dislike"
 def handle_feedback(update, context):
 
 	query = update.callback_query
@@ -16,17 +18,13 @@ def handle_feedback(update, context):
 	cb_data = update.callback_query.data
 	msg_id = str(update.effective_message.message_id)
 	user_id = str(update.effective_user.id)
-	
 
-	if cb_data == "discuss":
-		context.bot.forward_message(chat_id=os.environ.get("CHAT_ID"), from_chat_id=CHANNEL, message_id=msg_id)
-
-	else:
-		reaction = cb_data.split()[0]
-		curr_reaction_count = int(cb_data.split()[1])
+	reaction = cb_data.split()[0]
+	curr_reaction_count = int(cb_data.split()[1])
 	
-		try:
-			fb_storage = context.chat_data[msg_id]
+	# Checking the user and message id records within the telegram chat_data dict
+	try:
+		fb_storage = context.chat_data[msg_id]
 			try:
 				fb_storage_reaction_ulist = fb_storage[reaction]
 				fb_storage_reaction_ulist.remove(user_id)
@@ -46,11 +44,11 @@ def handle_feedback(update, context):
 				curr_reaction_count += 1
 
 
-		except KeyError:
-			context.chat_data[msg_id] = {}
-			context.chat_data[msg_id][reaction] = [user_id]
+	except KeyError:
+		context.chat_data[msg_id] = {}
+		context.chat_data[msg_id][reaction] = [user_id]
 
-			curr_reaction_count += 1
+		curr_reaction_count += 1
 
 
 	# 3) Generating Updating new InlineKeyboardMarkup 
@@ -88,7 +86,7 @@ def handle_feedback(update, context):
 			)	
 
 
-
+#instantiating dispatcher, handlers, setting webhook
 def main():
 
 	updater = Updater(token=TOKEN, use_context=True)
